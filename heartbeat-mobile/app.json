@@ -16,6 +16,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "dev.realkc.heartbeats",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
