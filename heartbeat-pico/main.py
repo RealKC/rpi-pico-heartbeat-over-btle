@@ -48,10 +48,10 @@ async def peripheral_task():
     while True:
         async with await aioble.advertise(
             _ADV_INTERVAL_MS,
-            name="mpy-temp",
+            name="Pico Heartbeat",
             services=[_HEART_RATE_UUID],
             appearance=_ADV_APPEARANCE_GENERIC_HEART_RATE_SENSOR,
-        ) as connection: # type: ignore
+        ) as connection:  # type: ignore
             print("Connection from", connection.device)
             await connection.disconnected(timeout_ms=None)
 
