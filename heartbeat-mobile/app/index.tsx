@@ -1,12 +1,16 @@
+import {
+  BluetoothContext,
+  BluetoothManager,
+} from "@/components/BluetoothManager";
 import { HeartBeat } from "@/components/HeartBeat";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { MigrationRunner } from "@/db/migration-runner";
 import { DatabaseProvider, useDatabase } from "@/db/provider";
 import { historicalHeartbeats } from "@/db/schema";
-import { Link } from "expo-router";
-import { useEffect, useState } from "react";
-import { Pressable } from "react-native";
+import Link from "expo-router/link";
+import { useContext, useEffect, useState } from "react";
+import { Pressable, View } from "react-native";
 
 export default function HomeScreen() {
   return (
@@ -17,33 +21,43 @@ export default function HomeScreen() {
         alignItems: "center",
       }}
     >
-      <DatabaseProvider>
-        <MigrationRunner>
-          <HeartBeat></HeartBeat>
-          <Link href="/history" asChild>
-            <Pressable>
-              <ThemedText>Istoric</ThemedText>
-            </Pressable>
-          </Link>
-          <Test />
-        </MigrationRunner>
-      </DatabaseProvider>
+      <BluetoothManager>
+        <DatabaseProvider>
+          <MigrationRunner>
+            <HeartBeat></HeartBeat>
+            <View style={{ alignItems: "center" }}>
+              <Link href="/history" asChild>
+                <Pressable>
+                  <ThemedText>Istoric</ThemedText>
+                </Pressable>
+              </Link>
+              <HeartBeatInfo />
+            </View>
+          </MigrationRunner>
+        </DatabaseProvider>
+      </BluetoothManager>
     </ThemedView>
   );
 }
 
-function Test() {
+function HeartBeatInfo() {
   const { db } = useDatabase();
 
   const [values, setValues] = useState<
     (typeof historicalHeartbeats.$inferSelect)[] | null
   >(null);
 
+  const bpm = useContext(BluetoothContext);
+
   useEffect(() => {
     async function fetch() {
+      if (!bpm) {
+        return;
+      }
+
       await db
         .insert(historicalHeartbeats)
-        .values({ value: 80, timestamp: Date.now() });
+        .values({ value: bpm, timestamp: Date.now() });
 
       setValues(await db.select().from(historicalHeartbeats));
     }
@@ -53,17 +67,13 @@ function Test() {
     }
   });
 
+  if (!bpm) {
+    return <View></View>;
+  }
+
   if (!values) {
     return <ThemedText>Loading...</ThemedText>;
   }
 
-  return (
-    <ThemedView>
-      {values.map((value) => (
-        <ThemedText key={value.timestamp}>
-          {value.timestamp} {value.value}
-        </ThemedText>
-      ))}
-    </ThemedView>
-  );
+  return <ThemedText>{bpm} bpm</ThemedText>;
 }
