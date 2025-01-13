@@ -1,5 +1,6 @@
 {
   "expo": {
+    "newArchEnabled": true,
     "name": "heartbeat-mobile",
     "slug": "heartbeat-mobile",
     "version": "1.0.0",
@@ -11,9 +12,6 @@
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true
     },
     "android": {
       "package": "dev.realkc.heartbeats",
@@ -29,7 +27,16 @@
     },
     "plugins": [
       "expo-router",
-      "react-native-ble-plx"
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
