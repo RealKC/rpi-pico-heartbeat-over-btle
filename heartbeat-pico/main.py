@@ -28,9 +28,8 @@ bpm_characteristic = aioble.Characteristic(
 aioble.register_services(heart_rate_service)
 
 
-# Helper to encode the temperature characteristic encoding (sint16, hundredths of a degree).
-def _encode_bpm(temp_deg_c):
-    return struct.pack("<B", int(temp_deg_c))
+def _encode_bpm(bpm):
+    return struct.pack(">h", int(bpm))
 
 
 # based on this blog post https://peppe8o.com/pulse-sensor-with-raspberry-pi-pico-hearth-beat-chech-with-micropython/
@@ -67,7 +66,9 @@ async def sensor_task():
             print(f"{beats} bpm")
             bpm_characteristic.write(_encode_bpm(beats), send_update=True)
             beats = 0
-            await asyncio.sleep_ms(10)  # yield to other tasks for a bit
+            await asyncio.sleep_ms(100)  # yield to other tasks for a bit
+
+        await asyncio.sleep_ms(1)
 
 
 # Serially wait for connections. Don't advertise while a central is
