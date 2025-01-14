@@ -1,7 +1,4 @@
-import {
-  BluetoothContext,
-  BluetoothManager,
-} from "@/components/BluetoothManager";
+import { BluetoothManager, useHeartbeat } from "@/components/BluetoothManager";
 import { HeartBeat } from "@/components/HeartBeat";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -26,11 +23,11 @@ export default function HomeScreen() {
           <MigrationRunner>
             <HeartBeat></HeartBeat>
             <View style={{ alignItems: "center" }}>
-              <Link href="/history" asChild>
+              {/* <Link href="/history" asChild>
                 <Pressable>
                   <ThemedText>Istoric</ThemedText>
                 </Pressable>
-              </Link>
+              </Link> */}
               <HeartBeatInfo />
             </View>
           </MigrationRunner>
@@ -47,7 +44,7 @@ function HeartBeatInfo() {
     (typeof historicalHeartbeats.$inferSelect)[] | null
   >(null);
 
-  const bpm = useContext(BluetoothContext);
+  const bpm = useHeartbeat();
 
   useEffect(() => {
     async function fetch() {

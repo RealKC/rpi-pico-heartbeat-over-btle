@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useEffect, useState } from "react";
 import { EventSubscription, View } from "react-native";
 import BleManager, {
@@ -8,7 +8,13 @@ import BleManager, {
   Peripheral,
 } from "react-native-ble-manager";
 
-export const BluetoothContext = React.createContext<number | null>(null);
+const BluetoothContext = React.createContext<number | null>(null);
+
+export function useHeartbeat() {
+  const state = useContext(BluetoothContext);
+
+  return state;
+}
 
 export function BluetoothManager({ children }: { children?: React.ReactNode }) {
   const SERVICE_UUID = "180D";
@@ -33,6 +39,32 @@ export function BluetoothManager({ children }: { children?: React.ReactNode }) {
           callbackType: BleScanCallbackType.AllMatches,
         });
 
+        // @ts-expect-error
+        if (!intervalId)
+          intervalId = setInterval(() => {
+            const f = async () => {
+              if (peripheral) {
+                try {
+                  console.log("interval triggered");
+                  const data = await BleManager.read(
+                    peripheral.id,
+                    SERVICE_UUID,
+                    "2a37"
+                  );
+                  const bpm = data[1] | (data[0] << 8);
+                  console.log(`Received heartbeat ${bpm}`);
+                  setHeartbeat(bpm);
+                } catch (e) {
+                  console.error(e);
+                }
+              }
+            };
+
+            f();
+          }, 1000);
+
+        console.log(`interval created: ${intervalId}`);
+
         listeners = [
           BleManager.onDiscoverPeripheral(async (peripheral: Peripheral) => {
             if (!isConnected) {
@@ -50,29 +82,14 @@ export function BluetoothManager({ children }: { children?: React.ReactNode }) {
           BleManager.onDisconnectPeripheral((peripheral: Peripheral) => {
             console.log(`disconnected: ${JSON.stringify(peripheral)}`);
             setPeripheral(null);
+            setIsConnected(false);
+            // @ts-expect-error
+            clearInterval(intervalId);
+            intervalId = null;
           }),
         ];
-
-        intervalId = setInterval(() => {
-          const f = async () => {
-            if (peripheral) {
-              try {
-                const data = await BleManager.read(
-                  peripheral.id,
-                  SERVICE_UUID,
-                  "2a37"
-                );
-                setHeartbeat(data[0]);
-              } catch (e) {
-                console.error(e);
-              }
-            }
-          };
-
-          f();
-        }, 1000);
       } catch (e) {
-        console.log("Error starting bluetooth", e);
+        console.log("Error starting bluetooth ", e);
       }
     };
 
@@ -88,7 +105,7 @@ export function BluetoothManager({ children }: { children?: React.ReactNode }) {
         clearInterval(intervalId);
       }
     };
-  }, []);
+  }, [isConnected, peripheral]);
 
   return (
     <View>
