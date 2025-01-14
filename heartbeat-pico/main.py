@@ -41,7 +41,7 @@ async def sensor_task():
     short_average = 15
     long_average = 100
     beat_threshold = 200
-    finger_threshold = 30000
+    finger_threshold = 20000
     history = []
 
     last_time = time.ticks_ms()
@@ -86,11 +86,6 @@ async def peripheral_task():
 
 # Run both tasks.
 async def main():
-    print(f"{_HEART_RATE_UUID}, {_HEART_RATE_SENSOR_UUID}")
-
-    for characteristic in heart_rate_service.characteristics:
-        print(characteristic.uuid)
-
     t1 = asyncio.create_task(sensor_task())
     t2 = asyncio.create_task(peripheral_task())
     await asyncio.gather(t1, t2)
